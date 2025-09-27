@@ -22,8 +22,11 @@ public class SecurityConfig {
 
 	private final JwtValidator jwtValidator;
 
-	public SecurityConfig(JwtValidator jwtValidator) {
+	private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+	public SecurityConfig(JwtValidator jwtValidator, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
 		this.jwtValidator = jwtValidator;
+		this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
 	}
 
 	@Bean
@@ -33,7 +36,8 @@ public class SecurityConfig {
 				.authorizeHttpRequests(authorize -> authorize.requestMatchers("/api/**").authenticated()
 						.requestMatchers("api/super-admin/**").hasRole("ADMIN").anyRequest().permitAll())
 				.addFilterBefore(jwtValidator, BasicAuthenticationFilter.class).csrf(AbstractHttpConfigurer::disable)
-				.cors(cors -> cors.configurationSource(corsConfigurationSource())).build();
+				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+				.exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint)).build();
 	}
 
 	private CorsConfigurationSource corsConfigurationSource() {

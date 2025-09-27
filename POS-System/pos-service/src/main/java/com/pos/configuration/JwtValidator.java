@@ -26,9 +26,11 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtValidator extends OncePerRequestFilter {
 
 	private final JwtConfig jwtConfig;
+	private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
-	public JwtValidator(JwtConfig jwtConfig) {
+	public JwtValidator(JwtConfig jwtConfig, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
 		this.jwtConfig = jwtConfig;
+		this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
 	}
 
 	@Override
@@ -51,7 +53,9 @@ public class JwtValidator extends OncePerRequestFilter {
 				Authentication auth = new UsernamePasswordAuthenticationToken(email, null, auths);
 				SecurityContextHolder.getContext().setAuthentication(auth);
 			} catch (Exception e) {
-				throw new BadCredentialsException("Invalid JWT Token");
+				jwtAuthenticationEntryPoint.commence(request, response,
+						new BadCredentialsException("Invalid JWT Token"));
+				return;
 			}
 		}
 
